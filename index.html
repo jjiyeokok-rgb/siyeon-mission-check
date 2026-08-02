@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4bd32" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="시연이 미션" />
+  <title>시연이의 미션 체크</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="cloud cloud-one" aria-hidden="true"></div>
+  <div class="cloud cloud-two" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">TODAY'S LITTLE ADVENTURE</p>
+        <h1><span>♡</span> 시연이의 미션 체크 <span>♡</span></h1>
+        <p id="todayLabel" class="date-label"></p>
+      </div>
+      <div class="hero-actions">
+      <button id="cloudButton" class="cloud-button" type="button"><span id="cloudDot"></span><span id="cloudLabel">기기 저장 중</span></button>
+      <button id="openReportButton" class="report-open-button" type="button">📋 한달보고서</button>
+      <div class="star-score" aria-label="모은 별">
+        <span aria-hidden="true">★</span>
+        <strong id="starCount">0</strong>
+        <small>모은 별</small>
+      </div>
+      </div>
+    </header>
+
+    <section class="progress-card" aria-labelledby="progressTitle">
+      <div class="progress-copy">
+        <div>
+          <p id="progressTitle" class="section-kicker">오늘의 진행률</p>
+          <h2 id="cheerMessage">첫 미션을 시작해 볼까요?</h2>
+        </div>
+        <strong id="progressText">0%</strong>
+      </div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <p id="progressDetail" class="progress-detail">완료한 미션이 아직 없어요.</p>
+    </section>
+
+    <section class="academy-card" aria-labelledby="academyTitle">
+      <div class="academy-heading">
+        <div>
+          <p class="section-kicker">WEEKLY SCHEDULE</p>
+          <h2 id="academyTitle">이번 주 학원 스케줄</h2>
+        </div>
+        <div id="academyToday" class="academy-today"></div>
+      </div>
+      <div id="academyWeek" class="academy-week"></div>
+    </section>
+
+    <div class="main-grid">
+      <section class="mission-panel" aria-labelledby="missionTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">MY MISSIONS</p>
+            <h2 id="missionTitle">오늘의 미션</h2>
+          </div>
+          <button id="openAddButton" class="primary-button" type="button">＋ 미션 추가</button>
+        </div>
+
+        <form id="addForm" class="add-form" hidden>
+          <label for="missionInput">새로운 미션</label>
+          <div class="add-row">
+            <input id="missionInput" maxlength="40" autocomplete="off" placeholder="예: 책 20분 읽기" />
+            <select id="missionCategory" aria-label="미션 종류">
+              <option value="korean-reading">📖 한글독서</option>
+              <option value="book-listening">🎧 영어책 청독</option>
+              <option value="read-aloud">🎙️ 낭독스쿨</option>
+              <option value="video">🎬 영어영상</option>
+              <option value="math">✏️ 수학</option>
+            </select>
+            <button class="save-button" type="submit">추가</button>
+            <button id="cancelAddButton" class="text-button" type="button">취소</button>
+          </div>
+          <p id="inputHelp" class="input-help">40자 이내로 적어 주세요.</p>
+        </form>
+
+        <ul id="missionList" class="mission-list" aria-live="polite"></ul>
+        <div id="emptyState" class="empty-state" hidden>
+          <div aria-hidden="true">🌱</div>
+          <strong>아직 미션이 없어요</strong>
+          <p>작은 일부터 하나씩 추가해 보세요!</p>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="stamp-card" aria-labelledby="stampTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="section-kicker">7 DAY RECORD</p>
+              <h2 id="stampTitle">나의 도장판</h2>
+            </div>
+            <span class="streak"><b id="streakCount">0</b>일 연속</span>
+          </div>
+          <div id="weekGrid" class="week-grid"></div>
+          <p class="stamp-guide">하루 미션을 모두 완료하면 왕관 도장을 받아요!</p>
+        </section>
+
+        <section class="promise-card">
+          <span class="promise-icon" aria-hidden="true">💛</span>
+          <div>
+            <h2>시연이의 약속</h2>
+            <p>완벽하지 않아도 괜찮아.<br />오늘의 나를 칭찬해 주기!</p>
+          </div>
+        </section>
+
+        <button id="resetButton" class="reset-button" type="button">오늘 체크만 다시 시작하기</button>
+      </aside>
+    </div>
+  </main>
+
+  <section id="reportView" class="report-view" hidden>
+    <div class="report-toolbar no-print">
+      <button id="closeReportButton" class="text-button report-back" type="button">← 미션 체크로</button>
+      <div class="report-selectors">
+        <select id="reportYear" aria-label="보고서 연도"></select>
+        <select id="reportMonth" aria-label="보고서 월"></select>
+      </div>
+      <button id="printReportButton" class="primary-button" type="button">🖨 인쇄 · PDF 저장</button>
+    </div>
+    <article id="monthlyReport" class="report-paper">
+      <header class="report-head">
+        <div>
+          <p>SIYEON'S MONTHLY RECORD</p>
+          <h2>시연이의 한달보고서 <small id="reportPeriod"></small></h2>
+        </div>
+        <strong>미션 체크</strong>
+      </header>
+      <div id="reportSummary" class="report-summary"></div>
+      <div class="report-columns">
+        <table class="report-calendar">
+          <thead><tr><th>주차</th><th>요일</th><th>날짜</th><th>영어책</th><th>영상</th><th>마주<br>이야기</th></tr></thead>
+          <tbody id="reportCalendarBody"></tbody>
+        </table>
+        <div class="report-notes">
+          <label>아이 반응관찰 및 고민 - 영어그림책
+            <div class="auto-titles" data-report-titles="book"></div>
+            <textarea data-report-note="book" placeholder="아이의 반응과 고민을 기록해 주세요."></textarea>
+          </label>
+          <label>아이 반응관찰 및 고민 - 영어영상
+            <div class="auto-titles" data-report-titles="video"></div>
+            <textarea data-report-note="video" placeholder="노출 시간과 아이의 반응을 기록해 주세요."></textarea>
+          </label>
+          <label>마주이야기 외 그림, 글쓰기, 놀이
+            <div class="auto-titles" data-report-titles="talk"></div>
+            <textarea data-report-note="talk" placeholder="대화, 놀이, 글쓰기와 생활미션의 변화를 기록해 주세요."></textarea>
+          </label>
+        </div>
+      </div>
+      <footer class="report-footer">
+        <strong id="monthlyPraise"></strong>
+        <span id="monthlyTotal"></span>
+      </footer>
+    </article>
+  </section>
+
+  <div id="celebration" class="celebration" hidden>
+    <div class="confetti" aria-hidden="true"></div>
+    <div class="celebration-card" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
+      <div class="crown" aria-hidden="true">👑</div>
+      <p class="section-kicker">MISSION COMPLETE!</p>
+      <h2 id="celebrationTitle">오늘의 미션 완료!</h2>
+      <p>시연아, 오늘도 정말 멋지게 해냈어.<br />왕관 도장과 보너스 별을 받았어요!</p>
+      <button id="closeCelebration" class="primary-button" type="button">신나게 확인!</button>
+    </div>
+  </div>
+
+  <div id="authModal" class="auth-modal" hidden>
+    <form id="authForm" class="auth-card">
+      <button id="closeAuthButton" class="auth-close" type="button" aria-label="닫기">×</button>
+      <div class="auth-icon" aria-hidden="true">☁️</div>
+      <p class="section-kicker">CLOUD SYNC</p>
+      <h2>휴대폰과 함께 쓰기</h2>
+      <p id="authDescription">부모님 이메일로 로그인하면 모든 기기에서 같은 기록을 볼 수 있어요.</p>
+      <div id="authFields">
+        <label>이메일<input id="authEmail" type="email" autocomplete="email" required placeholder="parent@example.com" /></label>
+        <label>비밀번호<input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="6자 이상" /></label>
+      </div>
+      <p id="authMessage" class="auth-message" aria-live="polite"></p>
+      <div id="authActions" class="auth-actions">
+        <button class="primary-button" type="submit">로그인</button>
+        <button id="signUpButton" class="outline-button" type="button">처음 사용하기</button>
+      </div>
+      <button id="signOutButton" class="outline-button signout-button" type="button" hidden>로그아웃</button>
+      <small>공용 기기에서는 사용 후 로그아웃해 주세요.</small>
+    </form>
+  </div>
+
+  <template id="missionTemplate">
+    <li class="mission-item">
+      <button class="check-button" type="button" aria-label="미션 완료하기"><span>✓</span></button>
+      <span class="mission-emoji" aria-hidden="true"></span>
+      <span class="mission-text"></span>
+      <span class="mission-category"></span>
+      <span class="mission-star" aria-hidden="true">+1 ★</span>
+      <button class="delete-button" type="button" aria-label="미션 삭제">×</button>
+      <label class="mission-detail" hidden>
+        <span class="sr-only">제목 기록</span>
+        <input class="mission-detail-input" maxlength="80" autocomplete="off" />
+      </label>
+    </li>
+  </template>
+
+  <script src="cloud-config.js"></script>
+  <script src="cloud-sync.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

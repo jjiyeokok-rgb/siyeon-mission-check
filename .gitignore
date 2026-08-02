@@ -1,0 +1,12 @@
+# Local source documents and generated work files
+*.hwp
+*.hwpx
+*.pdf
+*.xlsx
+tmp/
+supabase-setup.sql
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/

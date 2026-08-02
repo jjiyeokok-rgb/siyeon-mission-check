@@ -1,0 +1,19 @@
+{
+  "name": "시연이의 미션 체크",
+  "short_name": "시연이 미션",
+  "description": "매일 미션과 한달보고서를 기록하는 시연이의 앱",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffdf3",
+  "theme_color": "#ffdc52",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
