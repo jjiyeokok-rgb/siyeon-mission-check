@@ -400,4 +400,3 @@ rollToToday();
 snapshotToday();
 initReportSelectors();
 render();
-
