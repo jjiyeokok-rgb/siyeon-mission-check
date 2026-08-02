@@ -104,7 +104,11 @@
     document.querySelector("#signUpButton").addEventListener("click", async () => {
       if (!el.email.reportValidity() || !el.password.reportValidity()) return;
       showMessage("계정을 만들고 있어요…", true);
-      const { data, error } = await client.auth.signUp({ email: el.email.value.trim(), password: el.password.value });
+      const { data, error } = await client.auth.signUp({
+        email: el.email.value.trim(),
+        password: el.password.value,
+        options: { emailRedirectTo: "https://jjiyeokok-rgb.github.io/siyeon-mission-check/" }
+      });
       if (error) showMessage(error.message);
       else if (!data.session) showMessage("확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.", true);
       else showMessage("계정을 만들고 로그인했어요!", true);
