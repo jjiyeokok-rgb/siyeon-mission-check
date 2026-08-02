@@ -152,8 +152,8 @@ function render() {
     item.dataset.id = mission.id;
     item.classList.toggle("done", mission.done);
     item.querySelector(".mission-emoji").textContent = mission.emoji;
-    item.querySelector(".mission-text").textContent = mission.category === "read-aloud" ? `낭독스쿨 · ${mission.text}` : mission.text;
-    item.querySelector(".mission-category").textContent = mission.category === "read-aloud" ? "각각 체크" : (CATEGORY_LABELS[mission.category] || "생활");
+    item.querySelector(".mission-text").textContent = mission.text;
+    item.querySelector(".mission-category").textContent = CATEGORY_LABELS[mission.category] || "생활";
     const detailLabel = item.querySelector(".mission-detail");
     const detailInput = item.querySelector(".mission-detail-input");
     if (DETAIL_PLACEHOLDERS[mission.category]) {
