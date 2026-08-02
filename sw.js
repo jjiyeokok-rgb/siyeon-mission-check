@@ -1,4 +1,4 @@
-const CACHE_NAME = "siyeon-mission-v8";
+const CACHE_NAME = "siyeon-mission-v9";
 const APP_FILES = ["./", "./index.html", "./style.css", "./app.js", "./cloud-config.js", "./cloud-sync.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
