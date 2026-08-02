@@ -107,7 +107,11 @@
           <div class="love-letter-content">
             <h2>엄마아빠와의 사랑편지</h2>
             <form id="loveLetterForm" class="love-letter-form">
-              <select id="loveLetterAuthor" aria-label="작성자"><option>엄마</option><option>아빠</option><option>시연</option></select>
+              <select id="loveLetterAuthor" aria-label="사랑편지 작성자">
+                <option value="엄마" aria-label="엄마">👩🏻</option>
+                <option value="아빠" aria-label="아빠">👨🏻</option>
+                <option value="시연" aria-label="시연">👧🏻</option>
+              </select>
               <textarea id="loveLetterMessage" maxlength="300" required placeholder="서로에게 전하고 싶은 사랑을 적어 주세요."></textarea>
               <button class="primary-button" type="submit">편지 남기기</button>
             </form>

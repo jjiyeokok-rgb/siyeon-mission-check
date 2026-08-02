@@ -294,12 +294,13 @@ document.addEventListener("keydown", (event) => { if (event.key === "Escape") el
 
 function monthKey(value = new Date()) { return dateKey(value).slice(0, 7); }
 function escapeHtml(value) { const div = document.createElement("div"); div.textContent = value; return div.innerHTML; }
+function authorEmoji(author) { return { 엄마: "👩🏻", 아빠: "👨🏻", 시연: "👧🏻" }[author] || "💛"; }
 
 function renderLoveLetters() {
   const letters = state.loveLetters.filter((letter) => letter.month === monthKey());
   $("#loveLetterList").innerHTML = letters.length ? letters.map((letter) => `
     <article class="love-letter" data-letter-id="${letter.id}">
-      <div><strong>${escapeHtml(letter.author)}</strong><small>${letter.date}</small></div>
+      <div><strong title="${escapeHtml(letter.author)}" aria-label="${escapeHtml(letter.author)}">${authorEmoji(letter.author)}</strong><small>${letter.date}</small></div>
       <p>${escapeHtml(letter.message)}</p>
       <div class="letter-actions"><button type="button" data-letter-edit>수정</button><button type="button" data-letter-delete>삭제</button></div>
     </article>`).join("") : '<p class="letter-empty">이번 달 첫 사랑편지를 남겨 보세요.</p>';
@@ -404,7 +405,7 @@ function renderMonthlyReport() {
   });
   const letters = state.loveLetters.filter((letter) => letter.month === noteKey);
   $("#reportLoveLetterList").innerHTML = letters.length
-    ? letters.map((letter) => `<p><strong>${escapeHtml(letter.author)}</strong> ${escapeHtml(letter.message)}</p>`).join("")
+    ? letters.map((letter) => `<p><strong title="${escapeHtml(letter.author)}">${authorEmoji(letter.author)}</strong> ${escapeHtml(letter.message)}</p>`).join("")
     : "<p>이번 달에 작성한 사랑편지가 아직 없어요.</p>";
 }
 
