@@ -82,10 +82,10 @@ h1 span { color: var(--pink); }
 .academy-heading h2 { margin:0; font-family:"Gaegu",cursive; font-size:1.55rem; }
 .academy-today { padding:7px 11px; border-radius:11px; color:#55515a; background:#fff0a6; font-size:.76rem; font-weight:800; }
 .academy-week { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
-.academy-day { min-width:0; padding:11px 8px; border:1px solid #eee4c5; border-radius:14px; background:#fff; text-align:center; }
+.academy-day { min-width:0; padding:11px 5px; border:1px solid #eee4c5; border-radius:14px; background:#fff; text-align:center; }
 .academy-day strong { display:block; margin-bottom:7px; color:#8a858d; font-size:.76rem; }
-.academy-day ul { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin:0; padding:0; list-style:none; }
-.academy-day li { padding:3px 6px; border-radius:7px; color:#66616a; background:#f7f4ed; font-size:.67rem; font-weight:700; white-space:nowrap; }
+.academy-day ul { display:flex; flex-direction:column; align-items:stretch; gap:5px; margin:0; padding:0; list-style:none; }
+.academy-day li { width:100%; padding:3px 4px; border-radius:7px; color:#66616a; background:#f7f4ed; font-size:.67rem; font-weight:700; line-height:1.35; white-space:nowrap; }
 .academy-day.today { border:2px solid #ffda4c; background:#fffbea; box-shadow:0 7px 18px rgba(225,184,36,.14); transform:translateY(-2px); }
 .academy-day.today strong { color:#d3a000; }
 .academy-day.today li { color:#4b4850; background:#ffe983; }
@@ -242,7 +242,7 @@ h1 span { color: var(--pink); }
   .academy-card { padding:18px; border-radius:23px; }
   .academy-heading { display:block; }
   .academy-today { display:inline-block; max-width:none; margin-top:10px; text-align:left; }
-  .academy-week { grid-template-columns:repeat(6,minmax(92px,1fr)); overflow-x:auto; padding:3px 2px 8px; }
+  .academy-week { grid-template-columns:repeat(6,82px); justify-content:start; overflow-x:auto; padding:3px 2px 8px; }
   .academy-week { scrollbar-width:thin; scrollbar-color:#ffe36a transparent; scroll-snap-type:x proximity; }
   .academy-day { scroll-snap-align:start; }
 }
