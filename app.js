@@ -40,7 +40,7 @@ const OLD_DEFAULT_NAMES = new Set(["일어나서 이불 정리하기", "학교 �
 
 const $ = (selector) => document.querySelector(selector);
 const els = {
-  todayLabel: $("#todayLabel"), starCount: $("#starCount"), progressText: $("#progressText"),
+  todayLabel: $("#todayLabel"), crownCount: $("#crownCount"), progressText: $("#progressText"),
   progressBar: $("#progressBar"), progressTrack: $(".progress-track"), progressDetail: $("#progressDetail"),
   cheerMessage: $("#cheerMessage"), missionList: $("#missionList"), emptyState: $("#emptyState"),
   template: $("#missionTemplate"), addForm: $("#addForm"), missionInput: $("#missionInput"),
@@ -59,10 +59,19 @@ function loadState() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved?.missions && Array.isArray(saved.missions)) return saved;
   } catch (_) {}
-  return { date: dateKey(), missions: DEFAULT_MISSIONS, history: {}, dailyLogs: {}, reportNotes: {}, bonusStars: 0, celebratedOn: null };
+  return { date: dateKey(), missions: DEFAULT_MISSIONS, history: {}, dailyLogs: {}, reportNotes: {}, crowns: [], celebratedOn: null };
+}
+
+function ensureCrowns(target) {
+  target.history ||= {};
+  if (!Array.isArray(target.crowns)) {
+    target.crowns = Object.entries(target.history).filter(([, complete]) => complete).map(([date]) => date);
+    if (target.celebratedOn && !target.crowns.includes(target.celebratedOn)) target.crowns.push(target.celebratedOn);
+  }
 }
 
 let state = loadState();
+ensureCrowns(state);
 state.dailyLogs ||= {};
 state.reportNotes ||= {};
 state.reportOverrides ||= {};
@@ -106,6 +115,7 @@ window.getSiyeonLocalState = () => JSON.parse(JSON.stringify(state));
 window.applySiyeonCloudState = (remoteState) => {
   if (!remoteState?.missions || !Array.isArray(remoteState.missions)) return;
   state = remoteState;
+  ensureCrowns(state);
   state.dailyLogs ||= {}; state.reportNotes ||= {}; state.reportOverrides ||= {}; state.history ||= {};
   state.missions = state.missions.map((mission) => ({ ...mission, detail: mission.detail || "", category: mission.category || "life" }));
   rollToToday();
@@ -181,7 +191,7 @@ function renderProgress() {
   els.progressBar.style.width = `${percent}%`;
   els.progressTrack.setAttribute("aria-valuenow", String(percent));
   els.progressDetail.textContent = total ? `${total}개 중 ${done}개의 미션을 완료했어요.` : "미션을 추가하면 진행률이 보여요.";
-  els.starCount.textContent = done + (state.bonusStars || 0);
+  els.crownCount.textContent = state.crowns.length;
 
   if (!total) els.cheerMessage.textContent = "새로운 미션을 만들어 볼까요?";
   else if (percent === 100) els.cheerMessage.textContent = "와! 오늘도 모두 해냈어요!";
@@ -227,8 +237,8 @@ function toggleMission(id) {
   const allDone = state.missions.length > 0 && state.missions.every((item) => item.done);
   if (allDone) {
     state.history[state.date] = true;
+    if (!state.crowns.includes(state.date)) state.crowns.push(state.date);
     if (state.celebratedOn !== state.date) {
-      state.bonusStars = (state.bonusStars || 0) + 3;
       state.celebratedOn = state.date;
       setTimeout(() => { els.celebration.hidden = false; $("#closeCelebration").focus(); }, 350);
     }
