@@ -154,13 +154,15 @@ h1 span { color: var(--pink); }
 .promise-card p { margin: 0; color: #7d704f; font-size: .76rem; line-height: 1.55; }
 .love-letter-card { align-items:flex-start; }
 .love-letter-content { min-width:0; flex:1; }
-.love-letter-form { display:grid; gap:7px; margin-top:11px; }
+.love-letter-form { display:grid; grid-template-columns:52px minmax(0,1fr); align-items:start; gap:7px; margin-top:11px; }
 .love-letter-form select,.love-letter-form textarea { width:100%; padding:8px 9px; border:1px solid #eadb9d; border-radius:10px; background:#fffef8; font:inherit; }
+.love-letter-form select { height:42px; padding:5px; font-size:1.25rem; text-align:center; cursor:pointer; }
 .love-letter-form textarea { min-height:76px; resize:vertical; }
-.love-letter-form .primary-button { justify-self:end; }
+.love-letter-form .primary-button { grid-column:2; justify-self:end; }
 .love-letter-list { display:grid; gap:7px; margin-top:12px; }
 .love-letter { padding:10px; border:1px solid #eee0ad; border-radius:12px; background:rgba(255,255,255,.72); }
 .love-letter > div:first-child { display:flex; justify-content:space-between; }
+.love-letter > div:first-child strong { font-size:1.15rem; }
 .love-letter small { color:#a3956f; }
 .love-letter p { margin:6px 0; color:#5c5546; white-space:pre-wrap; word-break:break-word; }
 .letter-actions { display:flex; justify-content:flex-end; gap:7px; }
