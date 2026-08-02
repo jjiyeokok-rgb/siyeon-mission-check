@@ -18,10 +18,10 @@ const DETAIL_PLACEHOLDERS = {};
 const ACADEMY_SCHEDULE = {
   1: ["터전"],
   2: ["터전", "놀이방"],
-  3: [],
+  3: ["터전"],
   4: ["터전", "나래울", "하키"],
   5: ["터전", "재능"],
-  6: ["터전", "하키", "오프아이스"]
+  6: ["하키", "오프아이스"]
 };
 const academyScheduleForDate = (date = new Date()) => date.getFullYear() === 2026 && date.getMonth() === 7 && date.getDate() === 3
   ? ["터전", "나래울"]

@@ -28,6 +28,11 @@
     const el = ui(); el.message.textContent = text; el.message.classList.toggle("success", success);
   }
 
+  function isMissingCloudTable(error) {
+    const message = `${error?.code || ""} ${error?.message || ""}`.toLowerCase();
+    return message.includes("jooyoon_mission_states") || message.includes("relation") || message.includes("schema cache");
+  }
+
   function updateAuthUI() {
     const el = ui();
     if (user) {
@@ -45,7 +50,11 @@
     if (!user) return;
     setStatus("syncing", "불러오는 중");
     const { data, error } = await client.from("jooyoon_mission_states").select("state,updated_at").eq("user_id", user.id).maybeSingle();
-    if (error) { setStatus("error", "연결 확인 필요"); showMessage(error.message); return; }
+    if (error) {
+      setStatus("error", isMissingCloudTable(error) ? "클라우드 설정 필요" : "연결 확인 필요");
+      showMessage(error.message);
+      return;
+    }
     if (data?.state) {
       lastRemoteTimestamp = data.updated_at || "";
       window.applyJooyoonCloudState?.(data.state);
@@ -60,7 +69,10 @@
     if (!user) return;
     setStatus("syncing", "저장 중");
     const { data, error } = await client.from("jooyoon_mission_states").upsert({ user_id: user.id, state, updated_at: new Date().toISOString() }, { onConflict: "user_id" }).select("updated_at").single();
-    if (error) { setStatus("error", "저장 실패"); return; }
+    if (error) {
+      setStatus("error", isMissingCloudTable(error) ? "클라우드 설정 필요" : "저장 실패");
+      return;
+    }
     lastRemoteTimestamp = data?.updated_at || "";
     setStatus("online", "동기화됨");
   }
