@@ -28,12 +28,13 @@ const ACADEMY_SCHEDULE = {
   5: ["한자", "피아노"],
   6: ["하키", "오프아이스"]
 };
+const mathMissionName = (date = new Date()) => [0, 3, 6].includes(date.getDay()) ? "쎈수학" : "쎈연산";
 const DEFAULT_MISSIONS = [
   { id: crypto.randomUUID(), text: "한글독서", done: false, detail: "", emoji: "📖", category: "korean-reading" },
   { id: crypto.randomUUID(), text: "영어책 청독", done: false, detail: "", emoji: "🎧", category: "book-listening" },
   { id: crypto.randomUUID(), text: "낭독스쿨", done: false, emoji: "🎙️", category: "read-aloud" },
   { id: crypto.randomUUID(), text: "영어영상", done: false, detail: "", emoji: "🎬", category: "video" },
-  { id: crypto.randomUUID(), text: "수학", done: false, emoji: "✏️", category: "math" }
+  { id: crypto.randomUUID(), text: mathMissionName(), done: false, emoji: "✏️", category: "math" }
 ];
 const OLD_DEFAULT_NAMES = new Set(["일어나서 이불 정리하기", "학교 준비물 챙기기", "책 20분 읽기", "내 방 한 번 정리하기"]);
 
@@ -68,6 +69,13 @@ state.reportOverrides ||= {};
 state.missions = state.missions
   .filter((mission) => !OLD_DEFAULT_NAMES.has(mission.text))
   .map((mission) => ({ ...mission, category: mission.category || "life", detail: mission.detail || "" }));
+const currentMathMission = state.missions.find((mission) => mission.category === "math" || ["수학", "쎈수학", "쎈연산"].includes(mission.text));
+if (currentMathMission) {
+  currentMathMission.text = mathMissionName();
+  currentMathMission.category = "math";
+  currentMathMission.emoji = "✏️";
+}
+state.missions = state.missions.filter((mission, index, missions) => mission.category !== "math" || index === missions.findIndex((item) => item.category === "math"));
 for (const core of DEFAULT_MISSIONS) {
   if (!state.missions.some((mission) => mission.text === core.text)) state.missions.push(core);
 }
@@ -79,7 +87,12 @@ function rollToToday() {
   state.history[state.date] = wasComplete;
   snapshotToday();
   state.date = today;
-  state.missions = state.missions.map((mission) => ({ ...mission, done: false, detail: "" }));
+  state.missions = state.missions.map((mission) => ({
+    ...mission,
+    text: mission.category === "math" ? mathMissionName() : mission.text,
+    done: false,
+    detail: ""
+  }));
   save();
 }
 
