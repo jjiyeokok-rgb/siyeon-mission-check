@@ -29,10 +29,11 @@ const ACADEMY_SCHEDULE = {
   6: ["하키", "오프아이스"]
 };
 const mathMissionName = (date = new Date()) => [0, 3, 6].includes(date.getDay()) ? "쎈수학" : "쎈연산";
+const readAloudNames = (date = new Date()) => date < new Date(2026, 7, 10) ? ["입트영", "영초탈"] : ["입트영", "고전동화"];
 const DEFAULT_MISSIONS = [
   { id: crypto.randomUUID(), text: "한글독서", done: false, detail: "", emoji: "📖", category: "korean-reading" },
   { id: crypto.randomUUID(), text: "영어책 청독", done: false, detail: "", emoji: "🎧", category: "book-listening" },
-  { id: crypto.randomUUID(), text: "낭독스쿨", done: false, emoji: "🎙️", category: "read-aloud" },
+  ...readAloudNames().map((text) => ({ id: crypto.randomUUID(), text, done: false, emoji: "🎙️", category: "read-aloud" })),
   { id: crypto.randomUUID(), text: "영어영상", done: false, detail: "", emoji: "🎬", category: "video" },
   { id: crypto.randomUUID(), text: mathMissionName(), done: false, emoji: "✏️", category: "math" }
 ];
@@ -44,7 +45,7 @@ const els = {
   progressBar: $("#progressBar"), progressTrack: $(".progress-track"), progressDetail: $("#progressDetail"),
   cheerMessage: $("#cheerMessage"), missionList: $("#missionList"), emptyState: $("#emptyState"),
   template: $("#missionTemplate"), addForm: $("#addForm"), missionInput: $("#missionInput"),
-  weekGrid: $("#weekGrid"), streakCount: $("#streakCount"), celebration: $("#celebration")
+  celebration: $("#celebration")
 };
 
 const dateKey = (date = new Date()) => {
@@ -59,7 +60,7 @@ function loadState() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved?.missions && Array.isArray(saved.missions)) return saved;
   } catch (_) {}
-  return { date: dateKey(), missions: DEFAULT_MISSIONS, history: {}, dailyLogs: {}, reportNotes: {}, crowns: [], celebratedOn: null };
+  return { date: dateKey(), missions: DEFAULT_MISSIONS, history: {}, dailyLogs: {}, reportNotes: {}, crowns: [], loveLetters: [], rewardMilestones: [], celebratedOn: null };
 }
 
 function ensureCrowns(target) {
@@ -75,6 +76,8 @@ ensureCrowns(state);
 state.dailyLogs ||= {};
 state.reportNotes ||= {};
 state.reportOverrides ||= {};
+state.loveLetters ||= [];
+state.rewardMilestones ||= [];
 state.missions = state.missions
   .filter((mission) => !OLD_DEFAULT_NAMES.has(mission.text))
   .map((mission) => ({ ...mission, category: mission.category || "life", detail: mission.detail || "" }));
@@ -85,8 +88,10 @@ if (currentMathMission) {
   currentMathMission.emoji = "✏️";
 }
 state.missions = state.missions.filter((mission, index, missions) => mission.category !== "math" || index === missions.findIndex((item) => item.category === "math"));
+const desiredReadAloud = readAloudNames();
+state.missions = state.missions.filter((mission) => mission.category !== "read-aloud" || desiredReadAloud.includes(mission.text));
 for (const core of DEFAULT_MISSIONS) {
-  if (!state.missions.some((mission) => mission.text === core.text)) state.missions.push(core);
+  if (!state.missions.some((mission) => mission.category === core.category && mission.text === core.text)) state.missions.push(core);
 }
 
 function rollToToday() {
@@ -117,7 +122,15 @@ window.applySiyeonCloudState = (remoteState) => {
   state = remoteState;
   ensureCrowns(state);
   state.dailyLogs ||= {}; state.reportNotes ||= {}; state.reportOverrides ||= {}; state.history ||= {};
+  state.loveLetters ||= []; state.rewardMilestones ||= [];
   state.missions = state.missions.map((mission) => ({ ...mission, detail: mission.detail || "", category: mission.category || "life" }));
+  const cloudReadAloudNames = readAloudNames();
+  state.missions = state.missions.filter((mission) => mission.category !== "read-aloud" || cloudReadAloudNames.includes(mission.text));
+  cloudReadAloudNames.forEach((text) => {
+    if (!state.missions.some((mission) => mission.category === "read-aloud" && mission.text === text)) {
+      state.missions.push({ id: crypto.randomUUID(), text, done: false, detail: "", emoji: "🎙️", category: "read-aloud" });
+    }
+  });
   rollToToday();
   snapshotToday();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -165,7 +178,7 @@ function render() {
   els.emptyState.hidden = state.missions.length !== 0;
   renderAcademySchedule();
   renderProgress();
-  renderWeek();
+  renderLoveLetters();
 }
 
 function renderAcademySchedule() {
@@ -192,42 +205,16 @@ function renderProgress() {
   els.progressTrack.setAttribute("aria-valuenow", String(percent));
   els.progressDetail.textContent = total ? `${total}개 중 ${done}개의 미션을 완료했어요.` : "미션을 추가하면 진행률이 보여요.";
   els.crownCount.textContent = state.crowns.length;
+  const earned = Math.floor(state.crowns.length / 100);
+  const remainder = state.crowns.length % 100;
+  $("#rewardCount").textContent = earned;
+  $("#rewardProgress").textContent = `데이트권 ${earned}장 · 다음까지 ${remainder ? 100 - remainder : 100}개`;
 
   if (!total) els.cheerMessage.textContent = "새로운 미션을 만들어 볼까요?";
   else if (percent === 100) els.cheerMessage.textContent = "와! 오늘도 모두 해냈어요!";
   else if (percent >= 60) els.cheerMessage.textContent = "조금만 더! 멋지게 하고 있어요.";
   else if (percent > 0) els.cheerMessage.textContent = "좋은 시작이에요. 하나씩 차근차근!";
   else els.cheerMessage.textContent = "첫 미션을 시작해 볼까요?";
-}
-
-function renderWeek() {
-  els.weekGrid.innerHTML = "";
-  const today = new Date();
-  const labels = ["일", "월", "화", "수", "목", "금", "토"];
-  for (let offset = -6; offset <= 0; offset++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + offset);
-    const key = dateKey(date);
-    const todayComplete = key === state.date && state.missions.length > 0 && state.missions.every((mission) => mission.done);
-    const complete = todayComplete || state.history[key] === true;
-    const cell = document.createElement("div");
-    cell.className = `day-cell${key === dateKey() ? " today" : ""}${complete ? " complete" : ""}`;
-    cell.innerHTML = `<span class="day-name">${labels[date.getDay()]}</span><span class="stamp">${complete ? "♛" : date.getDate()}</span>`;
-    els.weekGrid.append(cell);
-  }
-
-  let streak = 0;
-  for (let offset = 0; offset > -365; offset--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + offset);
-    const key = dateKey(date);
-    const complete = key === state.date
-      ? state.missions.length > 0 && state.missions.every((mission) => mission.done)
-      : state.history[key] === true;
-    if (!complete) break;
-    streak++;
-  }
-  els.streakCount.textContent = streak;
 }
 
 function toggleMission(id) {
@@ -237,9 +224,18 @@ function toggleMission(id) {
   const allDone = state.missions.length > 0 && state.missions.every((item) => item.done);
   if (allDone) {
     state.history[state.date] = true;
-    if (!state.crowns.includes(state.date)) state.crowns.push(state.date);
+    const gotNewCrown = !state.crowns.includes(state.date);
+    if (gotNewCrown) state.crowns.push(state.date);
     if (state.celebratedOn !== state.date) {
       state.celebratedOn = state.date;
+      const milestone = gotNewCrown && state.crowns.length % 100 === 0 ? state.crowns.length : 0;
+      if (milestone && !state.rewardMilestones.includes(milestone)) state.rewardMilestones.push(milestone);
+      $("#celebrationKicker").textContent = milestone ? "100 CROWNS! SPECIAL REWARD!" : "MISSION COMPLETE!";
+      $("#celebrationTitle").textContent = milestone ? `왕관 ${milestone}개 달성!` : "오늘의 미션 완료!";
+      $("#celebrationMessage").innerHTML = milestone
+        ? "시연아, 정말정말 축하해! 🎉<br><strong>엄마아빠와 데이트권 1장</strong>을 받았어요!<br>함께 가고 싶은 곳을 골라 보자!"
+        : "시연아, 오늘도 정말 멋지게 해냈어.<br>새로운 왕관을 하나 받았어요!";
+      els.celebration.classList.toggle("milestone", Boolean(milestone));
       setTimeout(() => { els.celebration.hidden = false; $("#closeCelebration").focus(); }, 350);
     }
   } else {
@@ -295,6 +291,38 @@ $("#resetButton").addEventListener("click", () => {
 $("#closeCelebration").addEventListener("click", () => { els.celebration.hidden = true; });
 els.celebration.addEventListener("click", (event) => { if (event.target === els.celebration) els.celebration.hidden = true; });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") els.celebration.hidden = true; });
+
+function monthKey(value = new Date()) { return dateKey(value).slice(0, 7); }
+function escapeHtml(value) { const div = document.createElement("div"); div.textContent = value; return div.innerHTML; }
+
+function renderLoveLetters() {
+  const letters = state.loveLetters.filter((letter) => letter.month === monthKey());
+  $("#loveLetterList").innerHTML = letters.length ? letters.map((letter) => `
+    <article class="love-letter" data-letter-id="${letter.id}">
+      <div><strong>${escapeHtml(letter.author)}</strong><small>${letter.date}</small></div>
+      <p>${escapeHtml(letter.message)}</p>
+      <div class="letter-actions"><button type="button" data-letter-edit>수정</button><button type="button" data-letter-delete>삭제</button></div>
+    </article>`).join("") : '<p class="letter-empty">이번 달 첫 사랑편지를 남겨 보세요.</p>';
+}
+
+$("#loveLetterForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const message = $("#loveLetterMessage").value.trim(); if (!message) return;
+  state.loveLetters.push({ id: crypto.randomUUID(), author: $("#loveLetterAuthor").value, message, date: dateKey(), month: monthKey(), createdAt: new Date().toISOString() });
+  $("#loveLetterMessage").value = ""; save(); renderLoveLetters();
+});
+
+$("#loveLetterList").addEventListener("click", (event) => {
+  const article = event.target.closest("[data-letter-id]"); if (!article) return;
+  const letter = state.loveLetters.find((item) => item.id === article.dataset.letterId); if (!letter) return;
+  if (event.target.closest("[data-letter-edit]")) {
+    const message = prompt("사랑편지를 수정해 주세요.", letter.message);
+    if (message?.trim()) { letter.message = message.trim(); save(); renderLoveLetters(); }
+  }
+  if (event.target.closest("[data-letter-delete]") && confirm("이 사랑편지를 삭제할까요?")) {
+    state.loveLetters = state.loveLetters.filter((item) => item.id !== letter.id); save(); renderLoveLetters();
+  }
+});
 
 const reportEls = {
   view: $("#reportView"), year: $("#reportYear"), month: $("#reportMonth"), body: $("#reportCalendarBody"),
@@ -374,6 +402,10 @@ function renderMonthlyReport() {
     box.textContent = titles.length ? titles.map((title) => `• ${title}`).join("\n") : "아직 입력된 제목이 없어요.";
     box.classList.toggle("empty", titles.length === 0);
   });
+  const letters = state.loveLetters.filter((letter) => letter.month === noteKey);
+  $("#reportLoveLetterList").innerHTML = letters.length
+    ? letters.map((letter) => `<p><strong>${escapeHtml(letter.author)}</strong> ${escapeHtml(letter.message)}</p>`).join("")
+    : "<p>이번 달에 작성한 사랑편지가 아직 없어요.</p>";
 }
 
 $("#openReportButton").addEventListener("click", () => { document.querySelector(".app-shell").hidden = true; reportEls.view.hidden = false; renderMonthlyReport(); window.scrollTo(0,0); });

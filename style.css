@@ -67,8 +67,9 @@ h1 span { color: var(--pink); }
 .crown-score > span { font-size: 1.7rem; vertical-align: middle; filter: drop-shadow(0 2px 1px rgba(194,132,0,.2)); }
 .crown-score strong { margin-left: 5px; font-size: 1.55rem; }
 .crown-score small { display: block; margin-top: -2px; color: var(--muted); font-size: .72rem; }
+.crown-score em { display:block; margin-top:4px; color:#bf8f00; font-size:.61rem; font-style:normal; font-weight:800; white-space:nowrap; }
 
-.progress-card, .academy-card, .mission-panel, .stamp-card, .promise-card { border: 1px solid rgba(255,248,211,.95); background: rgba(255,253,242,.93); box-shadow: var(--shadow); backdrop-filter: blur(8px); }
+.progress-card, .academy-card, .mission-panel, .reward-card, .promise-card { border: 1px solid rgba(255,248,211,.95); background: rgba(255,253,242,.93); box-shadow: var(--shadow); backdrop-filter: blur(8px); }
 .progress-card { padding: 24px 28px; border-radius: 28px; margin-bottom: 22px; }
 .progress-copy { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .progress-copy h2 { margin-bottom: 12px; font-family: "Gaegu", cursive; font-size: 1.65rem; }
@@ -91,7 +92,7 @@ h1 span { color: var(--pink); }
 .academy-day.today li { color:#4b4850; background:#ffe983; }
 
 .main-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(270px, .75fr); gap: 22px; align-items: start; }
-.mission-panel, .stamp-card { padding: 26px; border-radius: 28px; }
+.mission-panel { padding: 26px; border-radius: 28px; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .section-heading h2 { margin: 0; font-family: "Gaegu", cursive; font-size: 1.75rem; }
 .primary-button, .save-button { border: 0; border-radius: 14px; color: #45424a; font-weight: 800; background: linear-gradient(135deg, #ffe879, #ffd238); box-shadow: 0 7px 18px rgba(223,181,28,.20); }
@@ -132,6 +133,11 @@ h1 span { color: var(--pink); }
 .empty-state p { margin: 5px 0 0; font-size: .86rem; }
 
 .side-panel { display: grid; gap: 16px; }
+.reward-card { display:flex; align-items:center; gap:13px; padding:18px 20px; border-radius:22px; background:linear-gradient(135deg,#fff4ad,#fffdf0); }
+.reward-icon { font-size:2.1rem; }
+.reward-card h2 { margin:0 0 4px; font-family:"Gaegu",cursive; font-size:1.35rem; }
+.reward-card p { margin:0; color:#7d704f; font-size:.75rem; }
+.reward-card .section-kicker { margin-bottom:2px; }
 .compact { margin-bottom: 16px; }
 .streak { padding: 6px 10px; border-radius: 10px; color: #c77000; background: #fff3c9; font-size: .74rem; }
 .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
@@ -146,6 +152,20 @@ h1 span { color: var(--pink); }
 .promise-icon { font-size: 2rem; }
 .promise-card h2 { margin: 0 0 4px; font-family: "Gaegu", cursive; font-size: 1.3rem; }
 .promise-card p { margin: 0; color: #7d704f; font-size: .76rem; line-height: 1.55; }
+.love-letter-card { align-items:flex-start; }
+.love-letter-content { min-width:0; flex:1; }
+.love-letter-form { display:grid; gap:7px; margin-top:11px; }
+.love-letter-form select,.love-letter-form textarea { width:100%; padding:8px 9px; border:1px solid #eadb9d; border-radius:10px; background:#fffef8; font:inherit; }
+.love-letter-form textarea { min-height:76px; resize:vertical; }
+.love-letter-form .primary-button { justify-self:end; }
+.love-letter-list { display:grid; gap:7px; margin-top:12px; }
+.love-letter { padding:10px; border:1px solid #eee0ad; border-radius:12px; background:rgba(255,255,255,.72); }
+.love-letter > div:first-child { display:flex; justify-content:space-between; }
+.love-letter small { color:#a3956f; }
+.love-letter p { margin:6px 0; color:#5c5546; white-space:pre-wrap; word-break:break-word; }
+.letter-actions { display:flex; justify-content:flex-end; gap:7px; }
+.letter-actions button { border:0; color:#9d8544; background:transparent; font-size:.68rem; }
+.letter-empty { padding:8px 0; text-align:center; }
 .reset-button { padding: 10px; border: 0; color: #9e9095; background: transparent; font-size: .76rem; text-decoration: underline; text-underline-offset: 3px; }
 
 .report-view { min-height:100vh; padding:20px; background:linear-gradient(145deg,#fff5c5,#fffdf2); }
@@ -183,6 +203,10 @@ h1 span { color: var(--pink); }
 .auto-titles.empty { color:#aaa49a; }
 .report-notes textarea { display:block; width:calc(100% + 4px); min-height:116px; margin-left:-4px; padding:8px; border:1px solid #c9c7c1; border-top:0; color:#282a30; background:#fff; font:10px/1.55 "Noto Sans KR",sans-serif; resize:vertical; }
 .report-footer { display:flex; justify-content:space-between; gap:12px; margin-top:14px; padding:11px 13px; border:1px solid #ffe071; border-radius:8px; color:#4c4951; background:#fff5c9; font-size:10px; }
+.report-love-letters { min-height:125px; padding:9px; border:1px solid #eadcaa; background:#fffdf3; }
+.report-love-letters h3 { margin:0 0 7px; color:#8c6f15; font-size:10px; }
+.report-love-letters p { margin:4px 0; color:#514d45; font-size:9px; line-height:1.5; }
+.report-love-letters strong { color:#bd8e00; margin-right:5px; }
 
 @media print {
   @page { size:A4 portrait; margin:9mm; }
@@ -200,6 +224,10 @@ h1 span { color: var(--pink); }
 .crown { font-size: 4rem; animation: wobble 1.1s ease-in-out infinite alternate; }
 .celebration-card h2 { margin-bottom: 10px; font-family: "Gaegu", cursive; font-size: 2.2rem; }
 .celebration-card > p:not(.section-kicker) { color: var(--muted); line-height: 1.7; }
+.celebration.milestone { background:rgba(77,55,0,.48); }
+.celebration.milestone .celebration-card { border:5px solid #ffe05a; background:linear-gradient(150deg,#fff6a6,#fff,#fff0a0); box-shadow:0 0 70px rgba(255,221,62,.72); transform:scale(1.04); }
+.celebration.milestone .crown { font-size:5.5rem; }
+.celebration.milestone h2 { color:#bd7500; font-size:2.7rem; }
 .confetti { position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle, #ffd058 0 5px, transparent 6px), radial-gradient(circle, #f1a91e 0 4px, transparent 5px), radial-gradient(circle, #fff0a6 0 5px, transparent 6px); background-size: 130px 150px, 170px 130px, 190px 180px; animation: confetti 7s linear infinite; }
 @keyframes pop { from { opacity: 0; transform: scale(.8) translateY(20px); } }
 @keyframes wobble { to { transform: rotate(8deg) scale(1.08); } }
@@ -236,7 +264,7 @@ h1 span { color: var(--pink); }
   .report-toolbar { position:static; flex-wrap:wrap; }
   .report-back { width:100%; margin:0; text-align:left; }
   .report-paper { width:760px; }
-  .progress-card, .mission-panel, .stamp-card { padding: 20px; border-radius: 23px; }
+  .progress-card, .mission-panel { padding: 20px; border-radius: 23px; }
   .academy-card { padding:18px; border-radius:23px; }
   .academy-heading { display:block; }
   .academy-today { display:inline-block; max-width:none; margin-top:10px; text-align:left; }

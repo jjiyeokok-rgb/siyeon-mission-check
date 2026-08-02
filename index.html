@@ -31,6 +31,7 @@
         <span aria-hidden="true">👑</span>
         <strong id="crownCount">0</strong>
         <small>모은 왕관</small>
+        <em id="rewardProgress">데이트권까지 100개</em>
       </div>
       </div>
     </header>
@@ -96,23 +97,21 @@
       </section>
 
       <aside class="side-panel">
-        <section class="stamp-card" aria-labelledby="stampTitle">
-          <div class="section-heading compact">
-            <div>
-              <p class="section-kicker">7 DAY RECORD</p>
-              <h2 id="stampTitle">나의 도장판</h2>
-            </div>
-            <span class="streak"><b id="streakCount">0</b>일 연속</span>
-          </div>
-          <div id="weekGrid" class="week-grid"></div>
-          <p class="stamp-guide">하루 미션을 모두 완료하면 왕관 도장을 받아요!</p>
+        <section class="reward-card" aria-labelledby="rewardTitle">
+          <span class="reward-icon" aria-hidden="true">🎟️</span>
+          <div><p class="section-kicker">100 CROWNS REWARD</p><h2 id="rewardTitle">엄마아빠와 데이트권</h2><p><b id="rewardCount">0</b>장 받았어요 · 왕관 100개마다 한 장!</p></div>
         </section>
 
-        <section class="promise-card">
+        <section class="promise-card love-letter-card">
           <span class="promise-icon" aria-hidden="true">💛</span>
-          <div>
-            <h2>시연이의 약속</h2>
-            <p>완벽하지 않아도 괜찮아.<br />오늘의 나를 칭찬해 주기!</p>
+          <div class="love-letter-content">
+            <h2>엄마아빠와의 사랑편지</h2>
+            <form id="loveLetterForm" class="love-letter-form">
+              <select id="loveLetterAuthor" aria-label="작성자"><option>엄마</option><option>아빠</option><option>시연</option></select>
+              <textarea id="loveLetterMessage" maxlength="300" required placeholder="서로에게 전하고 싶은 사랑을 적어 주세요."></textarea>
+              <button class="primary-button" type="submit">편지 남기기</button>
+            </form>
+            <div id="loveLetterList" class="love-letter-list" aria-live="polite"></div>
           </div>
         </section>
 
@@ -157,6 +156,10 @@
             <div class="auto-titles" data-report-titles="talk"></div>
             <textarea data-report-note="talk" placeholder="대화, 놀이, 글쓰기와 생활미션의 변화를 기록해 주세요."></textarea>
           </label>
+          <section class="report-love-letters">
+            <h3>💛 엄마아빠와의 사랑편지</h3>
+            <div id="reportLoveLetterList"></div>
+          </section>
         </div>
       </div>
       <footer class="report-footer">
@@ -170,9 +173,9 @@
     <div class="confetti" aria-hidden="true"></div>
     <div class="celebration-card" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
       <div class="crown" aria-hidden="true">👑</div>
-      <p class="section-kicker">MISSION COMPLETE!</p>
+      <p id="celebrationKicker" class="section-kicker">MISSION COMPLETE!</p>
       <h2 id="celebrationTitle">오늘의 미션 완료!</h2>
-      <p>시연아, 오늘도 정말 멋지게 해냈어.<br />새로운 왕관을 하나 받았어요!</p>
+      <p id="celebrationMessage">시연아, 오늘도 정말 멋지게 해냈어.<br />새로운 왕관을 하나 받았어요!</p>
       <button id="closeCelebration" class="primary-button" type="button">신나게 확인!</button>
     </div>
   </div>
