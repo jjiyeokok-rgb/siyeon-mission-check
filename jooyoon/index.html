@@ -118,6 +118,7 @@
           </div>
         </section>
 
+        <button id="openYesterdayButton" class="history-button" type="button">↩ 어제 기록 확인·수정</button>
         <button id="resetButton" class="reset-button" type="button">오늘 체크만 다시 시작하기</button>
       </aside>
     </div>
@@ -183,6 +184,18 @@
     </div>
   </div>
 
+  <div id="yesterdayModal" class="auth-modal" hidden>
+    <section class="auth-card history-card" role="dialog" aria-modal="true" aria-labelledby="yesterdayTitle">
+      <button id="closeYesterdayButton" class="auth-close" type="button" aria-label="닫기">×</button>
+      <div class="history-icon" aria-hidden="true">🗓️</div>
+      <p class="section-kicker">YESTERDAY'S RECORD</p>
+      <h2 id="yesterdayTitle">어제 미션 기록</h2>
+      <p id="yesterdayDate" class="history-date"></p>
+      <div id="yesterdayList" class="history-list"></div>
+      <p class="history-guide">수정한 내용은 왕관과 한달보고서에도 반영돼요.</p>
+    </section>
+  </div>
+
   <div id="authModal" class="auth-modal" hidden>
     <form id="authForm" class="auth-card">
       <button id="closeAuthButton" class="auth-close" type="button" aria-label="닫기">×</button>
@@ -199,6 +212,8 @@
         <button class="primary-button" type="submit">로그인</button>
         <button id="signUpButton" class="outline-button" type="button">처음 사용하기</button>
       </div>
+      <p id="syncDetails" class="sync-details"></p>
+      <button id="syncNowButton" class="outline-button sync-now-button" type="button" hidden>↻ 지금 동기화</button>
       <button id="signOutButton" class="outline-button signout-button" type="button" hidden>로그아웃</button>
       <small>공용 기기에서는 사용 후 로그아웃해 주세요.</small>
     </form>

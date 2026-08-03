@@ -13,6 +13,7 @@
     fields: document.querySelector("#authFields"), actions: document.querySelector("#authActions"),
     email: document.querySelector("#authEmail"), password: document.querySelector("#authPassword"),
     message: document.querySelector("#authMessage"), description: document.querySelector("#authDescription"),
+    syncDetails: document.querySelector("#syncDetails"), syncNow: document.querySelector("#syncNowButton"),
     signOut: document.querySelector("#signOutButton")
   });
 
@@ -33,60 +34,85 @@
     return message.includes("jooyoon_mission_states") || message.includes("relation") || message.includes("schema cache");
   }
 
+  function updateSyncDetails(timestamp = lastRemoteTimestamp) {
+    const el = ui();
+    if (!el.syncDetails) return;
+    if (!user) { el.syncDetails.textContent = "로그인하면 기기 간 기록을 확인할 수 있어요."; return; }
+    const time = timestamp ? new Intl.DateTimeFormat("ko-KR", { month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" }).format(new Date(timestamp)) : "아직 없음";
+    el.syncDetails.textContent = `계정: ${user.email} · 마지막 동기화: ${time}`;
+  }
+
   function updateAuthUI() {
     const el = ui();
     if (user) {
       el.description.textContent = `${user.email} 계정으로 동기화하고 있어요.`;
-      el.fields.hidden = true; el.actions.hidden = true; el.signOut.hidden = false;
+      el.fields.hidden = true; el.actions.hidden = true; el.syncNow.hidden = false; el.signOut.hidden = false;
       setStatus("online", "동기화됨");
     } else {
       el.description.textContent = "부모님 이메일로 로그인하면 모든 기기에서 같은 기록을 볼 수 있어요.";
-      el.fields.hidden = false; el.actions.hidden = false; el.signOut.hidden = true;
+      el.fields.hidden = false; el.actions.hidden = false; el.syncNow.hidden = true; el.signOut.hidden = true;
       setStatus("", "기기 저장 중");
     }
+    updateSyncDetails();
   }
 
   async function pullRemote() {
-    if (!user) return;
+    if (!user) return false;
     setStatus("syncing", "불러오는 중");
     const { data, error } = await client.from("jooyoon_mission_states").select("state,updated_at").eq("user_id", user.id).maybeSingle();
     if (error) {
       setStatus("error", isMissingCloudTable(error) ? "클라우드 설정 필요" : "연결 확인 필요");
       showMessage(error.message);
-      return;
+      return false;
     }
     if (data?.state) {
       lastRemoteTimestamp = data.updated_at || "";
-      window.applyJooyoonCloudState?.(data.state);
+      const local = window.getJooyoonLocalState?.();
+      const localTime = Date.parse(local?.updatedAt || 0), remoteTime = Date.parse(data.updated_at || data.state.updatedAt || 0);
+      if (local && localTime > remoteTime + 1000 && !await pushRemote(local)) return false;
+      else window.applyJooyoonCloudState?.(data.state);
     } else {
       const local = window.getJooyoonLocalState?.();
-      if (local) await pushRemote(local);
+      if (local && !await pushRemote(local)) return false;
     }
     setStatus("online", "동기화됨");
+    updateSyncDetails();
+    return true;
   }
 
   async function pushRemote(state) {
-    if (!user) return;
+    if (!user) return false;
     setStatus("syncing", "저장 중");
     const { data, error } = await client.from("jooyoon_mission_states").upsert({ user_id: user.id, state, updated_at: new Date().toISOString() }, { onConflict: "user_id" }).select("updated_at").single();
     if (error) {
       setStatus("error", isMissingCloudTable(error) ? "클라우드 설정 필요" : "저장 실패");
-      return;
+      return false;
     }
     lastRemoteTimestamp = data?.updated_at || "";
     setStatus("online", "동기화됨");
+    updateSyncDetails();
+    return true;
   }
 
   function subscribe() {
     if (channel) client.removeChannel(channel);
     if (!user) return;
     channel = client.channel(`mission-${user.id}`).on("postgres_changes", {
-      event: "UPDATE", schema: "public", table: "jooyoon_mission_states", filter: `user_id=eq.${user.id}`
-    }, (payload) => {
+      event: "*", schema: "public", table: "jooyoon_mission_states", filter: `user_id=eq.${user.id}`
+    }, async (payload) => {
       if (payload.new?.updated_at === lastRemoteTimestamp) return;
       lastRemoteTimestamp = payload.new?.updated_at || "";
-      if (payload.new?.state) window.applyJooyoonCloudState?.(payload.new.state);
-    }).subscribe();
+      if (payload.new?.state) {
+        const local = window.getJooyoonLocalState?.();
+        const localTime = Date.parse(local?.updatedAt || 0), remoteTime = Date.parse(payload.new.updated_at || payload.new.state.updatedAt || 0);
+        if (local && localTime > remoteTime + 1000) await pushRemote(local);
+        else window.applyJooyoonCloudState?.(payload.new.state);
+      }
+      updateSyncDetails();
+    }).subscribe((status) => {
+      if (status === "SUBSCRIBED") { setStatus("online", "동기화됨"); updateSyncDetails(); }
+      if (["CHANNEL_ERROR", "TIMED_OUT"].includes(status)) setStatus("error", "실시간 연결 확인");
+    });
   }
 
   async function init() {
@@ -126,6 +152,8 @@
       else showMessage("계정을 만들고 로그인했어요!", true);
     });
     el.signOut.addEventListener("click", async () => { await client.auth.signOut(); el.modal.hidden = true; });
+    el.syncNow.addEventListener("click", async () => { showMessage("최신 기록을 확인하고 있어요…", true); const ok = await pullRemote(); showMessage(ok ? "동기화를 확인했어요." : "동기화에 실패했어요. 연결 상태와 클라우드 설정을 확인해 주세요.", ok); });
+    window.addEventListener("online", () => { if (user) pullRemote(); });
     init();
   });
 
