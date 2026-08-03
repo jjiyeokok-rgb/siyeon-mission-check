@@ -292,6 +292,48 @@ $("#closeCelebration").addEventListener("click", () => { els.celebration.hidden 
 els.celebration.addEventListener("click", (event) => { if (event.target === els.celebration) els.celebration.hidden = true; });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") els.celebration.hidden = true; });
 
+function yesterdayDate() { const date = new Date(); date.setDate(date.getDate() - 1); return date; }
+function historicalMissions(date) {
+  return [
+    { id: crypto.randomUUID(), text: "한글독서", done: false, detail: "", emoji: "📖", category: "korean-reading" },
+    { id: crypto.randomUUID(), text: "영어책 청독", done: false, detail: "", emoji: "🎧", category: "book-listening" },
+    ...readAloudNames(date).map((text) => ({ id: crypto.randomUUID(), text, done: false, detail: "", emoji: "🎙️", category: "read-aloud" })),
+    { id: crypto.randomUUID(), text: "영어영상", done: false, detail: "", emoji: "🎬", category: "video" },
+    { id: crypto.randomUUID(), text: mathMissionName(date), done: false, detail: "", emoji: "✏️", category: "math" }
+  ];
+}
+function saveHistoricalLog(key, log) {
+  state.dailyLogs[key] = log;
+  const complete = log.length > 0 && log.every((mission) => mission.done);
+  state.history[key] = complete;
+  if (complete && !state.crowns.includes(key)) state.crowns.push(key);
+  if (!complete) state.crowns = state.crowns.filter((date) => date !== key);
+  save(); renderProgress();
+}
+function renderYesterdayEditor() {
+  const date = yesterdayDate(), key = dateKey(date);
+  const log = state.dailyLogs[key] || historicalMissions(date);
+  $("#yesterdayDate").textContent = new Intl.DateTimeFormat("ko-KR", { year:"numeric", month:"long", day:"numeric", weekday:"long" }).format(date);
+  const list = $("#yesterdayList"); list.innerHTML = "";
+  log.forEach((mission) => {
+    const item = document.createElement("div"); item.className = `history-item${mission.done ? " done" : ""}`;
+    const check = document.createElement("button"); check.type = "button"; check.className = "check-button"; check.textContent = "✓"; check.setAttribute("aria-pressed", String(mission.done));
+    const title = document.createElement("strong"); title.textContent = `${mission.emoji || "🌱"} ${mission.text}`;
+    check.addEventListener("click", () => { mission.done = !mission.done; saveHistoricalLog(key, log); renderYesterdayEditor(); });
+    item.append(check, title);
+    if (DETAIL_PLACEHOLDERS[mission.category]) {
+      const input = document.createElement("input"); input.className = "history-detail"; input.value = mission.detail || ""; input.placeholder = DETAIL_PLACEHOLDERS[mission.category];
+      input.addEventListener("input", () => { mission.detail = input.value; saveHistoricalLog(key, log); });
+      item.append(input);
+    }
+    list.append(item);
+  });
+}
+$("#openYesterdayButton").addEventListener("click", () => { renderYesterdayEditor(); $("#yesterdayModal").hidden = false; });
+$("#closeYesterdayButton").addEventListener("click", () => { $("#yesterdayModal").hidden = true; });
+$("#yesterdayModal").addEventListener("click", (event) => { if (event.target === $("#yesterdayModal")) $("#yesterdayModal").hidden = true; });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") $("#yesterdayModal").hidden = true; });
+
 function monthKey(value = new Date()) { return dateKey(value).slice(0, 7); }
 function escapeHtml(value) { const div = document.createElement("div"); div.textContent = value; return div.innerHTML; }
 function authorEmoji(author) { return { 엄마: "👩🏻", 아빠: "👨🏻", 시연: "👧🏻" }[author] || "💛"; }
