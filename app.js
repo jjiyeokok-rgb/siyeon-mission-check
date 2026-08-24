@@ -399,6 +399,16 @@ function dayHasCategory(key, category) {
   return (state.dailyLogs[key] || []).some((mission) => linkedCategories.includes(mission.category) && mission.done);
 }
 
+function uniqueTitleList(titles) {
+  const seen = new Set();
+  return titles.filter((title) => {
+    const normalized = title.normalize("NFC").replace(/\s+/g, " ").trim().toLocaleLowerCase("ko-KR");
+    if (!normalized || seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+}
+
 function renderMonthlyReport() {
   snapshotToday(); save();
   const year = +reportEls.year.value, month = +reportEls.month.value;
@@ -453,7 +463,7 @@ function renderMonthlyReport() {
   const noteKey = `${year}-${String(month).padStart(2,"0")}`;
   document.querySelectorAll("[data-report-note]").forEach((area) => { area.value = state.reportNotes[noteKey]?.[area.dataset.reportNote] || ""; });
   document.querySelectorAll("[data-report-titles]").forEach((box) => {
-    const titles = accumulatedTitles[box.dataset.reportTitles] || [];
+    const titles = uniqueTitleList(accumulatedTitles[box.dataset.reportTitles] || []);
     box.textContent = titles.length ? titles.map((title) => `• ${title}`).join("\n") : "아직 입력된 제목이 없어요.";
     box.classList.toggle("empty", titles.length === 0);
   });
