@@ -6,6 +6,8 @@ const CATEGORY_LABELS = {
   "read-aloud": "낭독스쿨",
   video: "영어영상",
   math: "수학",
+  "school-homework": "학교숙제",
+  "english-homework": "영어학원숙제",
   book: "영어책",
   talk: "마주·놀이",
   life: "생활"
@@ -30,24 +32,28 @@ const ACADEMY_SCHEDULE = {
 };
 const mathMissionName = (date = new Date()) => [0, 3, 6].includes(date.getDay()) ? "쎈수학" : "쎈연산";
 const readAloudNames = (date = new Date()) => date < new Date(2026, 7, 10) ? ["입트영", "영초탈"] : ["영초탈", "전래동화"];
-const MANAGED_CATEGORIES = new Set(["korean-reading", "book-listening", "read-aloud", "video", "math"]);
+const MANAGED_CATEGORIES = new Set(["korean-reading", "book-listening", "read-aloud", "video", "math", "school-homework", "english-homework"]);
 const missionItem = (text, emoji, category) => ({ id: crypto.randomUUID(), text, done: false, detail: "", emoji, category });
 function missionsForDate(date = new Date()) {
   const day = date.getDay();
-  if (day === 2) return [
-    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
-    missionItem("쎈연산", "✏️", "math"), ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
-  ];
-  if (day === 3) return [missionItem("쎈수학", "✏️", "math")];
-  if (day === 4) return [
-    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
-    ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
-  ];
-  return [
-    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
-    ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud")),
-    missionItem("영어영상", "🎬", "video"), missionItem(mathMissionName(date), "✏️", "math")
-  ];
+  let missions;
+  if (day === 2) missions = [
+      missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+      missionItem("쎈연산", "✏️", "math"), ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
+    ];
+  else if (day === 3) missions = [missionItem("쎈수학", "✏️", "math")];
+  else if (day === 4) missions = [
+      missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+      ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
+    ];
+  else missions = [
+      missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+      ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud")),
+      missionItem("영어영상", "🎬", "video"), missionItem(mathMissionName(date), "✏️", "math")
+    ];
+  if (day >= 1 && day <= 5) missions.push(missionItem("학교숙제", "🏫", "school-homework"));
+  if (day === 1 || day === 3) missions.push(missionItem("영어학원숙제", "🇬🇧", "english-homework"));
+  return missions;
 }
 const DEFAULT_MISSIONS = missionsForDate();
 function dateFromKey(key) { if (!key) return new Date(); const [year, month, day] = key.split("-").map(Number); return new Date(year, month - 1, day); }
@@ -399,6 +405,16 @@ function dayHasCategory(key, category) {
   return (state.dailyLogs[key] || []).some((mission) => linkedCategories.includes(mission.category) && mission.done);
 }
 
+function uniqueTitleList(titles) {
+  const seen = new Set();
+  return titles.filter((title) => {
+    const normalized = title.normalize("NFC").replace(/\s+/g, " ").trim().toLocaleLowerCase("ko-KR");
+    if (!normalized || seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+}
+
 function renderMonthlyReport() {
   snapshotToday(); save();
   const year = +reportEls.year.value, month = +reportEls.month.value;
@@ -453,7 +469,7 @@ function renderMonthlyReport() {
   const noteKey = `${year}-${String(month).padStart(2,"0")}`;
   document.querySelectorAll("[data-report-note]").forEach((area) => { area.value = state.reportNotes[noteKey]?.[area.dataset.reportNote] || ""; });
   document.querySelectorAll("[data-report-titles]").forEach((box) => {
-    const titles = accumulatedTitles[box.dataset.reportTitles] || [];
+    const titles = uniqueTitleList(accumulatedTitles[box.dataset.reportTitles] || []);
     box.textContent = titles.length ? titles.map((title) => `• ${title}`).join("\n") : "아직 입력된 제목이 없어요.";
     box.classList.toggle("empty", titles.length === 0);
   });
