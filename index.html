@@ -10,7 +10,7 @@
   <title>시연이의 미션 체크</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=17" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -248,12 +248,17 @@
     </li>
   </template>
 
-  <script src="cloud-config.js"></script>
-  <script src="cloud-sync.js"></script>
-  <script src="app.js"></script>
+  <script src="cloud-config.js?v=17"></script>
+  <script src="cloud-sync.js?v=17"></script>
+  <script src="app.js?v=17"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
-      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+      window.addEventListener("load", async () => {
+        try {
+          const registration = await navigator.serviceWorker.register("./sw.js?v=17", { updateViaCache: "none" });
+          await registration.update();
+        } catch (_) {}
+      });
     }
   </script>
 </body>

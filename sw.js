@@ -1,5 +1,5 @@
-const CACHE_NAME = "siyeon-mission-v16";
-const APP_FILES = ["./", "./index.html", "./style.css", "./app.js", "./cloud-config.js", "./cloud-sync.js", "./manifest.webmanifest", "./icon.svg"];
+const CACHE_NAME = "siyeon-mission-v17";
+const APP_FILES = ["./", "./index.html", "./style.css?v=17", "./app.js?v=17", "./cloud-config.js?v=17", "./cloud-sync.js?v=17", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES)));
