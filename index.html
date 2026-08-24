@@ -119,6 +119,7 @@
           </div>
         </section>
 
+        <button id="openMissionPreviewButton" class="history-button" type="button">👀 요일별 미션 미리보기</button>
         <button id="openYesterdayButton" class="history-button" type="button">↩ 어제 기록 확인·수정</button>
         <button id="resetButton" class="reset-button" type="button">오늘 체크만 다시 시작하기</button>
       </aside>
@@ -194,6 +195,19 @@
       <p id="yesterdayDate" class="history-date"></p>
       <div id="yesterdayList" class="history-list"></div>
       <p class="history-guide">수정한 내용은 왕관과 한달보고서에도 반영돼요.</p>
+    </section>
+  </div>
+
+  <div id="missionPreviewModal" class="auth-modal" hidden>
+    <section class="auth-card history-card" role="dialog" aria-modal="true" aria-labelledby="missionPreviewTitle">
+      <button id="closeMissionPreviewButton" class="auth-close" type="button" aria-label="닫기">×</button>
+      <div class="history-icon" aria-hidden="true">👀</div>
+      <p class="section-kicker">WEEKDAY PREVIEW</p>
+      <h2 id="missionPreviewTitle">요일별 미션 미리보기</h2>
+      <div id="missionPreviewDays" class="preview-days" aria-label="미리 볼 요일"></div>
+      <h3 id="missionPreviewDay" class="preview-title"></h3>
+      <div id="missionPreviewList" class="preview-list"></div>
+      <p class="history-guide">미리보기는 실제 체크 기록과 왕관에 영향을 주지 않아요.</p>
     </section>
   </div>
 
