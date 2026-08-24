@@ -326,6 +326,26 @@ $("#closeYesterdayButton").addEventListener("click", () => { $("#yesterdayModal"
 $("#yesterdayModal").addEventListener("click", (event) => { if (event.target === $("#yesterdayModal")) $("#yesterdayModal").hidden = true; });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") $("#yesterdayModal").hidden = true; });
 
+const PREVIEW_DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+function previewDateForDay(day) {
+  const date = new Date();
+  date.setDate(date.getDate() + (day - date.getDay() + 7) % 7);
+  return date;
+}
+function renderMissionPreview(day = 2) {
+  const days = $("#missionPreviewDays");
+  days.innerHTML = PREVIEW_DAY_NAMES.map((name, index) => `<button type="button" data-preview-day="${index}" class="${index === day ? "active" : ""}">${name}</button>`).join("");
+  $("#missionPreviewDay").textContent = `${PREVIEW_DAY_NAMES[day]}요일 미션 · ${missionsForDate(previewDateForDay(day)).length}개`;
+  $("#missionPreviewList").innerHTML = missionsForDate(previewDateForDay(day)).map((mission) => `
+    <div class="preview-item"><span>${mission.emoji}</span><strong>${mission.text}</strong><small>${CATEGORY_LABELS[mission.category] || "생활"}</small></div>
+  `).join("");
+}
+$("#openMissionPreviewButton").addEventListener("click", () => { renderMissionPreview(2); $("#missionPreviewModal").hidden = false; });
+$("#closeMissionPreviewButton").addEventListener("click", () => { $("#missionPreviewModal").hidden = true; });
+$("#missionPreviewDays").addEventListener("click", (event) => { const button = event.target.closest("[data-preview-day]"); if (button) renderMissionPreview(Number(button.dataset.previewDay)); });
+$("#missionPreviewModal").addEventListener("click", (event) => { if (event.target === $("#missionPreviewModal")) $("#missionPreviewModal").hidden = true; });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") $("#missionPreviewModal").hidden = true; });
+
 function monthKey(value = new Date()) { return dateKey(value).slice(0, 7); }
 function escapeHtml(value) { const div = document.createElement("div"); div.textContent = value; return div.innerHTML; }
 function authorEmoji(author) { return { 엄마: "👩🏻", 아빠: "👨🏻", 시연: "👧🏻" }[author] || "💛"; }

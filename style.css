@@ -183,6 +183,15 @@ h1 span { color: var(--pink); }
 .history-item strong { font-size:.84rem; }
 .history-detail { grid-column:2; width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:9px; outline:none; font-size:.76rem; }
 .history-guide { margin:12px 0 0; color:var(--muted); font-size:.7rem; text-align:center; }
+.preview-days { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin:14px 0; }
+.preview-days button { min-width:0; padding:9px 2px; border:1px solid var(--line); border-radius:10px; color:var(--muted); background:#fff; font-size:.72rem; font-weight:800; }
+.preview-days button.active { border-color:var(--pink); color:#65531f; background:var(--yellow); }
+.preview-title { margin:8px 0 9px; color:var(--ink); font-family:"Gaegu",cursive; font-size:1.25rem; text-align:center; }
+.preview-list { display:grid; gap:7px; }
+.preview-item { display:grid; grid-template-columns:30px minmax(0,1fr) auto; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:13px; background:#fff; }
+.preview-item > span { font-size:1.2rem; text-align:center; }
+.preview-item strong { font-size:.84rem; }
+.preview-item small { padding:3px 6px; border-radius:7px; color:#79632f; background:#fff5cd; font-size:.62rem; font-weight:700; }
 .sync-details { min-height:18px; margin:12px 0 5px; color:var(--muted); font-size:.7rem; line-height:1.5; }
 .sync-now-button { width:100%; margin-top:5px; }
 
