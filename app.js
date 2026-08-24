@@ -30,13 +30,35 @@ const ACADEMY_SCHEDULE = {
 };
 const mathMissionName = (date = new Date()) => [0, 3, 6].includes(date.getDay()) ? "쎈수학" : "쎈연산";
 const readAloudNames = (date = new Date()) => date < new Date(2026, 7, 10) ? ["입트영", "영초탈"] : ["영초탈", "전래동화"];
-const DEFAULT_MISSIONS = [
-  { id: crypto.randomUUID(), text: "한글독서", done: false, detail: "", emoji: "📖", category: "korean-reading" },
-  { id: crypto.randomUUID(), text: "영어책 청독", done: false, detail: "", emoji: "🎧", category: "book-listening" },
-  ...readAloudNames().map((text) => ({ id: crypto.randomUUID(), text, done: false, emoji: "🎙️", category: "read-aloud" })),
-  { id: crypto.randomUUID(), text: "영어영상", done: false, detail: "", emoji: "🎬", category: "video" },
-  { id: crypto.randomUUID(), text: mathMissionName(), done: false, emoji: "✏️", category: "math" }
-];
+const MANAGED_CATEGORIES = new Set(["korean-reading", "book-listening", "read-aloud", "video", "math"]);
+const missionItem = (text, emoji, category) => ({ id: crypto.randomUUID(), text, done: false, detail: "", emoji, category });
+function missionsForDate(date = new Date()) {
+  const day = date.getDay();
+  if (day === 2) return [
+    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+    missionItem("쎈연산", "✏️", "math"), ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
+  ];
+  if (day === 3) return [missionItem("쎈수학", "✏️", "math")];
+  if (day === 4) return [
+    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+    ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud"))
+  ];
+  return [
+    missionItem("한글독서", "📖", "korean-reading"), missionItem("영어책 청독", "🎧", "book-listening"),
+    ...readAloudNames(date).map((text) => missionItem(text, "🎙️", "read-aloud")),
+    missionItem("영어영상", "🎬", "video"), missionItem(mathMissionName(date), "✏️", "math")
+  ];
+}
+const DEFAULT_MISSIONS = missionsForDate();
+function dateFromKey(key) { if (!key) return new Date(); const [year, month, day] = key.split("-").map(Number); return new Date(year, month - 1, day); }
+function reconcileMissions(existing, date, reset = false) {
+  const prescribed = missionsForDate(date);
+  const custom = existing.filter((mission) => !MANAGED_CATEGORIES.has(mission.category));
+  return [...prescribed.map((mission) => {
+    const saved = existing.find((item) => item.category === mission.category && item.text === mission.text);
+    return saved ? { ...mission, id: saved.id, done: reset ? false : saved.done, detail: reset ? "" : (saved.detail || "") } : mission;
+  }), ...custom.map((mission) => ({ ...mission, done: reset ? false : mission.done, detail: reset ? "" : (mission.detail || "") }))];
+}
 const OLD_DEFAULT_NAMES = new Set(["일어나서 이불 정리하기", "학교 준비물 챙기기", "책 20분 읽기", "내 방 한 번 정리하기"]);
 
 const $ = (selector) => document.querySelector(selector);
@@ -81,18 +103,7 @@ state.rewardMilestones ||= [];
 state.missions = state.missions
   .filter((mission) => !OLD_DEFAULT_NAMES.has(mission.text))
   .map((mission) => ({ ...mission, category: mission.category || "life", detail: mission.detail || "" }));
-const currentMathMission = state.missions.find((mission) => mission.category === "math" || ["수학", "쎈수학", "쎈연산"].includes(mission.text));
-if (currentMathMission) {
-  currentMathMission.text = mathMissionName();
-  currentMathMission.category = "math";
-  currentMathMission.emoji = "✏️";
-}
-state.missions = state.missions.filter((mission, index, missions) => mission.category !== "math" || index === missions.findIndex((item) => item.category === "math"));
-const desiredReadAloud = readAloudNames();
-state.missions = state.missions.filter((mission) => mission.category !== "read-aloud" || desiredReadAloud.includes(mission.text));
-for (const core of DEFAULT_MISSIONS) {
-  if (!state.missions.some((mission) => mission.category === core.category && mission.text === core.text)) state.missions.push(core);
-}
+state.missions = reconcileMissions(state.missions, dateFromKey(state.date));
 
 function rollToToday() {
   const today = dateKey();
@@ -101,12 +112,7 @@ function rollToToday() {
   state.history[state.date] = wasComplete;
   snapshotToday();
   state.date = today;
-  state.missions = state.missions.map((mission) => ({
-    ...mission,
-    text: mission.category === "math" ? mathMissionName() : mission.text,
-    done: false,
-    detail: ""
-  }));
+  state.missions = reconcileMissions(state.missions, new Date(), true);
   save();
 }
 
@@ -124,13 +130,7 @@ window.applySiyeonCloudState = (remoteState) => {
   state.dailyLogs ||= {}; state.reportNotes ||= {}; state.reportOverrides ||= {}; state.history ||= {};
   state.loveLetters ||= []; state.rewardMilestones ||= [];
   state.missions = state.missions.map((mission) => ({ ...mission, detail: mission.detail || "", category: mission.category || "life" }));
-  const cloudReadAloudNames = readAloudNames();
-  state.missions = state.missions.filter((mission) => mission.category !== "read-aloud" || cloudReadAloudNames.includes(mission.text));
-  cloudReadAloudNames.forEach((text) => {
-    if (!state.missions.some((mission) => mission.category === "read-aloud" && mission.text === text)) {
-      state.missions.push({ id: crypto.randomUUID(), text, done: false, detail: "", emoji: "🎙️", category: "read-aloud" });
-    }
-  });
+  state.missions = reconcileMissions(state.missions, dateFromKey(state.date));
   rollToToday();
   snapshotToday();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -293,15 +293,7 @@ els.celebration.addEventListener("click", (event) => { if (event.target === els.
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") els.celebration.hidden = true; });
 
 function yesterdayDate() { const date = new Date(); date.setDate(date.getDate() - 1); return date; }
-function historicalMissions(date) {
-  return [
-    { id: crypto.randomUUID(), text: "한글독서", done: false, detail: "", emoji: "📖", category: "korean-reading" },
-    { id: crypto.randomUUID(), text: "영어책 청독", done: false, detail: "", emoji: "🎧", category: "book-listening" },
-    ...readAloudNames(date).map((text) => ({ id: crypto.randomUUID(), text, done: false, detail: "", emoji: "🎙️", category: "read-aloud" })),
-    { id: crypto.randomUUID(), text: "영어영상", done: false, detail: "", emoji: "🎬", category: "video" },
-    { id: crypto.randomUUID(), text: mathMissionName(date), done: false, detail: "", emoji: "✏️", category: "math" }
-  ];
-}
+function historicalMissions(date) { return missionsForDate(date); }
 function saveHistoricalLog(key, log) {
   state.dailyLogs[key] = log;
   const complete = log.length > 0 && log.every((mission) => mission.done);
